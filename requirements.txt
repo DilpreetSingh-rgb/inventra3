@@ -2,4 +2,12 @@ pandas
 numpy
 seaborn
 matplotlib
+warnings
+python
+streamlit
+sklearn
+datetime
+zoneinfo
+reportlab
+python
 -e .

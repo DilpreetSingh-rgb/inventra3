@@ -1,0 +1,190 @@
+/* ===================== Inventra Custom Styles ===================== */
+
+:root {
+    --primary: #4F46E5;
+    --primary-light: #6366F1;
+    --bg-light: #F8FAFC;
+    --card-bg: #FFFFFF;
+    --text-dark: #1E293B;
+    --text-muted: #64748B;
+    --border-color: #E2E8F0;
+    --success: #16A34A;
+    --warning: #D97706;
+    --danger: #DC2626;
+}
+
+/* ---------- Global App Background ---------- */
+.stApp {
+    background-color: var(--bg-light);
+}
+
+/* ---------- Sidebar ---------- */
+section[data-testid="stSidebar"] {
+    background-color: #1E1B4B;
+}
+
+section[data-testid="stSidebar"] .css-1d391kg,
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] p {
+    color: #F1F5F9 !important;
+}
+
+section[data-testid="stSidebar"] h1 {
+    font-weight: 700;
+    font-size: 1.6rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    margin-bottom: 1rem;
+}
+
+/* Radio buttons in sidebar */
+section[data-testid="stSidebar"] div[role="radiogroup"] label {
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    margin-bottom: 0.25rem;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+    background-color: rgba(255,255,255,0.08);
+}
+
+/* ---------- Page Header ---------- */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.page-header p {
+    margin: 0.25rem 0 0 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.page-header .timestamp {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    background-color: var(--card-bg);
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ---------- Metrics (Cards) ---------- */
+div[data-testid="stMetric"] {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+div[data-testid="stMetric"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+div[data-testid="stMetricLabel"] {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+div[data-testid="stMetricValue"] {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* ---------- Buttons ---------- */
+.stButton > button {
+    background-color: var(--primary);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.25rem;
+    font-weight: 600;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.stButton > button:hover {
+    background-color: var(--primary-light);
+    transform: translateY(-1px);
+}
+
+.stButton > button:active {
+    transform: translateY(0);
+}
+
+/* Download button */
+.stDownloadButton > button {
+    background-color: var(--success);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.stDownloadButton > button:hover {
+    background-color: #15803D;
+}
+
+/* ---------- Inputs ---------- */
+.stTextInput input,
+.stNumberInput input,
+.stSelectbox div[data-baseweb="select"] > div,
+textarea {
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.stTextInput input:focus,
+.stNumberInput input:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 1px var(--primary) !important;
+}
+
+/* ---------- Dataframes / Tables ---------- */
+div[data-testid="stDataFrame"] {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* ---------- Subheaders ---------- */
+h2, h3 {
+    color: var(--text-dark);
+    font-weight: 700;
+}
+
+/* ---------- Dividers ---------- */
+hr {
+    border-top: 1px solid var(--border-color);
+}
+
+/* ---------- Alerts ---------- */
+div[data-testid="stAlert"] {
+    border-radius: 8px;
+}
+
+/* ---------- Sliders ---------- */
+.stSlider [role="slider"] {
+    background-color: var(--primary) !important;
+}
