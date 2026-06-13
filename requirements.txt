@@ -2,12 +2,7 @@ pandas
 numpy
 seaborn
 matplotlib
-warnings
-python
 streamlit
-sklearn
-datetime
-zoneinfo
+scikit-learn
 reportlab
-python
--e .
+supabase
