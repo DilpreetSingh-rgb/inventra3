@@ -176,7 +176,11 @@ page = st.sidebar.radio(
 if page == "📦 Inventory Management":
     
     # ── Header ──────────────────────────────────────────────────────────────
-    now = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%A, %d %B %Y · %H:%M")
+    now = datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).strftime(
+        "%A, %d %B %Y · %H:%M"
+    )
     st.markdown(
         f"""
         <div class="page-header">
