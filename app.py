@@ -648,6 +648,7 @@ elif page == "📈 Sales Dashboard":
         )
     elif report == "Overview":
 
+        st.subheader("Overview")
         inventory = pd.DataFrame(
             get_inventory()
         )
@@ -728,6 +729,7 @@ elif page == "📈 Sales Dashboard":
         st.subheader("📋 Sales List")
         
         products = view_sales()
+        products = products.iloc[::-1]
         st.dataframe(
             products,
             hide_index=True,
