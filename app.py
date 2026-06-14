@@ -110,6 +110,24 @@ st.markdown("""
 
 </style>
 """, unsafe_allow_html=True)
+st.markdown("""
+<style>
+
+.stTextInput input {
+    color: black !important;
+}
+
+.stTextInput input::placeholder {
+    color: gray !important;
+    opacity: 1 !important;
+}
+
+label {
+    color: black !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # ==========================
 # SESSION STATE
