@@ -7,12 +7,13 @@ import pandas as pd
 # TOTAL PRODUCTS
 # ==========================
 
-def get_total_products():
+def get_total_products(user_id):
 
     response = (
         supabase
-        .table("products")
+        .table("shop")
         .select("*", count="exact")
+        .eq("shop_id",user_id )
         .execute()
     )
 
@@ -23,12 +24,13 @@ def get_total_products():
 # TOTAL STOCK
 # ==========================
 
-def get_total_stock():
+def get_total_stock(user_id):
 
     response = (
         supabase
-        .table("products")
+        .table("shop")
         .select("stock")
+        .eq("shop_id",user_id )
         .execute()
     )
 
@@ -42,12 +44,13 @@ def get_total_stock():
 # LOW STOCK ITEMS
 # ==========================
 
-def get_low_stock_items(limit=10):
+def get_low_stock_items(user_id,limit=10):
 
     response = (
         supabase
-        .table("products")
+        .table("shop")
         .select("*")
+        .eq("shop_id",user_id )
         .lte("stock", limit) #Less Than or Equal To (<=)
         .execute()
     )
@@ -59,7 +62,7 @@ def get_low_stock_items(limit=10):
 # TODAY SALES
 # ==========================
 
-def get_today_sales():
+def get_today_sales(user_id):
 
     today = datetime.now(
         ZoneInfo("Asia/Kolkata")
@@ -67,8 +70,9 @@ def get_today_sales():
 
     response = (
         supabase
-        .table("sales")
+        .table("invoice")
         .select("*")
+        .eq("shop_id",user_id )
         .execute()
     )
 
@@ -91,7 +95,7 @@ def get_today_sales():
 # TODAY REVENUE
 # ==========================
 
-def get_today_revenue():
+def get_today_revenue(user_id):
 
     today = datetime.now(
         ZoneInfo("Asia/Kolkata")
@@ -99,8 +103,9 @@ def get_today_revenue():
 
     response = (
         supabase
-        .table("sales")
+        .table("invoice")
         .select("*")
+        .eq("shop_id",user_id )
         .execute()
     )
 
@@ -115,7 +120,7 @@ def get_today_revenue():
         )
 
         if created == today:
-            revenue += row["total"]
+            revenue += row["sub_total"]
 
     return revenue
 
@@ -123,12 +128,13 @@ def get_today_revenue():
 # GET INVENTORY
 # ==========================
 
-def get_inventory():
+def get_inventory(user_id):
 
     response = (
         supabase
-        .table("products")
+        .table("shop")
         .select("*")
+        .eq("shop_id",user_id )
         .execute()
     )
 
@@ -137,10 +143,10 @@ def get_inventory():
 # view sales
 # ==========================
 
-def view_sales():
+def view_sales(user_id):
     try:
 
-        test = supabase.table("sales").select("*").execute()
+        test = supabase.table("invoice").select("*").eq("shop_id",user_id ).execute()
 
         df = pd.DataFrame(test.data)
         return df
@@ -151,21 +157,22 @@ def view_sales():
 # get empty stock items
 # ==========================
 
-def get_empty_stock_items(limit=1):
+def get_empty_stock_items(user_id,limit=1):
 
     response = (
         supabase
-        .table("products")
+        .table("shop")
         .select("*")
+        .eq("shop_id",user_id )
         .lt("stock", limit) #Less Than (<)
         .execute()
     )
 
     return response.data
     
-def get_revenue_trend(days):
+def get_revenue_trend(days,user_id):
 
-    sales = view_sales()
+    sales = view_sales(user_id)
 
     sales["created_at"] = pd.to_datetime(
         sales["created_at"]
@@ -177,7 +184,7 @@ def get_revenue_trend(days):
 
     sales["revenue"] = (
         sales["quantity"] *
-        sales["unit_price"]
+        sales["selling_price"]
     )
 
     start_date = (

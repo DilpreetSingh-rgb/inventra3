@@ -1,22 +1,26 @@
 import streamlit as st
-from utils.user import add_user
+from utils.user import login_user
 
 
 import pandas as pd
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+
+
 from utils.inventry import (
     add_product,
     view_products,
     update_product,
-    delete_product
+    delete_product,
+    get_product_by_id
 )
 
 from utils.billing import (
     get_products,
     get_bill_no,
-    save_bill
+    save_bill,
+    get_tax
 )
 
 from utils.invoice import generate_invoice
@@ -37,7 +41,7 @@ from utils.stock_recomendation import get_stock_recommendations
 
 from utils.recommendation import get_ai_recommendation
 
-from utils.supplier import add_supplier,view_suppliers,update_supplier,delete_supplier
+from utils.supplier import add_supplier,view_suppliers,update_supplier,delete_supplier,get_supplier_by_id
 
 # ---------------- PAGE CONFIG ---------------- #
 
@@ -133,6 +137,12 @@ label {
 if "user_name" not in st.session_state:
     st.session_state.user_name = None
 
+if "user_id" not in st.session_state:
+    st.session_state.user_password = None    
+
+if "user_id" not in st.session_state:
+    st.session_state.user_id = None    
+
 # ==========================
 # WELCOME PAGE
 # ==========================
@@ -151,30 +161,51 @@ if st.session_state.user_name is None:
 
     st.write("")
 
-    name = st.text_input(
-        "👤 Enter Your Name",
-        placeholder="Dilpreet Singh"
+    from utils.user import login_user
+
+    username = st.text_input(
+        "👤 Username"
     )
-
-    if st.button("Start Business"):
-
-        if not name.strip():
-
+    
+    password = st.text_input(
+        "🔒 Password",
+        type="password"
+    )
+    
+    if st.button("Login"):
+    
+        if not username or not password:
+        
             st.error(
-                "Please enter your name"
+                "Enter username and password"
             )
-
+    
         else:
+        
+            user = login_user(
+                username,
+                password
+            )
+    
+            if user:
+            
+                st.session_state.user_name = user["username"]
+    
+                st.session_state.user_password = user["password"]
 
-            add_user(name)
-
-            st.session_state.user_name = name
-
-            st.rerun()
-
+                st.session_state.user_id = user["shop_id"]
+                
+    
+                st.rerun()
+    
+            else:
+            
+                st.error(
+                    "Invalid Username or Password"
+                )
     st.stop()
 # ---------------- SIDEBAR ---------------- #
-
+    
 st.sidebar.title("🛒 Inventra")
 
 page = st.sidebar.radio(
@@ -229,8 +260,8 @@ if page == "📦 Inventory Management":
 
         price = st.number_input(
             "Price",
-            min_value=0.0,
-            step=1.0
+            min_value=0,
+            step=1
         )
 
         stock = st.number_input(
@@ -251,6 +282,7 @@ if page == "📦 Inventory Management":
                         name,                        
                         price,
                         stock,
+                        st.session_state.user_id
                     )
 
                     st.success("✅ Product Added Successfully")
@@ -264,7 +296,10 @@ if page == "📦 Inventory Management":
 
         st.subheader("📋 Product List")
         
-        products = view_products()
+        products = view_products(st.session_state.user_id)
+        if "shop_id" in products.columns:
+           products = products.drop(columns=["shop_id"])
+
         st.dataframe(
             products,
             hide_index=True,
@@ -291,8 +326,8 @@ if page == "📦 Inventory Management":
         if update_price:
             data["price"] = st.number_input(
                 "New Price",
-                min_value=0.0,
-                step=1.0
+                min_value=0,
+                step=1
             )
     
         if update_stock:
@@ -309,16 +344,26 @@ if page == "📦 Inventory Management":
     
             elif not data:
                 st.error("Select at least one field to update")
-    
+
             else:
-                try:
+
+                product = get_product_by_id(
+                    product_id,
+                    st.session_state.user_id
+                )
+
+                if not product:
                 
-                    update_product(product_id, data)
-    
-                    st.success("✅ Product Updated Successfully")
-    
-                except Exception as e:
-                    st.error(f"Error: {e}")
+                    st.error(
+                        "Product ID not found for your shop"
+                    )
+                else:
+                    try:
+                    
+                        update_product(product_id, data,st.session_state.user_id)
+                        st.success("✅ Product Updated Successfully")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
 
     # DELETE PRODUCT
 
@@ -336,14 +381,24 @@ if page == "📦 Inventory Management":
                 st.error("Enter Product ID")
 
             else:
-                try:
 
-                    delete_product(product_id)
-
-                    st.success("✅ Product Deleted Successfully")
-
-                except Exception as e:
-                    st.error(f"Error: {e}")   
+                product = get_product_by_id(
+                    product_id,
+                    st.session_state.user_id
+                )
+        
+                if not product:
+                
+                    st.error(
+                        "Product ID not found for your shop"
+                    )                
+                else:
+                    try:
+                
+                        delete_product(product_id,st.session_state.user_id)
+                        st.success("✅ Product Deleted Successfully")
+                    except Exception as e:
+                        st.error(f"Error: {e}")   
 
 
 elif page == "🧾 Billing":
@@ -366,7 +421,51 @@ elif page == "🧾 Billing":
         unsafe_allow_html=True,
     )
 
-    products = get_products()
+    # Initialize session state once
+    if "customer_name" not in st.session_state:
+        st.session_state.customer_name = ""
+
+    if "customer_address" not in st.session_state:
+        st.session_state.customer_address = ""
+
+    if "mobile_no" not in st.session_state:
+        st.session_state.mobile_no = ""
+    if "cgst_given" not in st.session_state:
+        st.session_state.cgst_given = 9
+    if "sgst_given" not in st.session_state:
+        st.session_state.sgst_given = 9
+
+    st.subheader("Customer Details")
+
+    customer_name = st.text_input(
+        "Customer Name",      
+        key="customer_name"
+    )
+
+    customer_address = st.text_area(
+        "Customer Address", 
+        key="customer_address"
+    )
+
+    mobile_no = st.text_input(
+        "Mobile Number",
+        key="mobile_no"
+    )
+    cgst_given = st.number_input(
+        "CGST %",
+        min_value=0,
+        value=9,
+        key="cgst_given"
+    )
+
+    sgst_given = st.number_input(
+        "SGST %",
+        min_value=0,
+        value=9,
+        key = "sgst_given"
+    )
+
+    products = get_products(st.session_state.user_id)
 
     if "bill_items" not in st.session_state:
         st.session_state.bill_items = []
@@ -390,6 +489,19 @@ elif page == "🧾 Billing":
             value=1,
             step=1
         )
+
+        product = next(
+            p for p in products
+            if p["name"] == selected_product
+        )
+
+        selling_price = st.number_input(
+            "Selling Price",
+            min_value=0.0,
+            value=float(product["price"]),
+            step=1.0
+        )
+
         if st.button("Add Product"):
         
             product = next(
@@ -397,14 +509,14 @@ elif page == "🧾 Billing":
                 if p["name"] == selected_product
             )
         
-            total = product["price"] * quantity
+            total = selling_price * quantity
         
             st.session_state.bill_items.append(
                 {
                     "product_id": product["id"],
                     "product_name": product["name"],
                     "quantity": quantity,
-                    "unit_price": product["price"],
+                    "unit_price": selling_price,
                     "total": total,
                     "stock": product["stock"]
                 }
@@ -438,9 +550,19 @@ elif page == "🧾 Billing":
         with col1:
         
             if st.button("🔄 New Bill"):
-        
+
                 st.session_state.bill_items = []
-        
+
+                for key in [
+                    "customer_name",
+                    "customer_address",
+                    "mobile_no",
+                    "cgst_given",
+                    "sgst_given",
+                ]:
+                    if key in st.session_state:
+                        del st.session_state[key]
+
                 st.rerun()
         
         with col2:
@@ -539,23 +661,54 @@ elif page == "🧾 Billing":
 
                     bill_no = get_bill_no()
 
+                    
+                # date and sub_total
+                    invoice_date = datetime.now().strftime("%d-%m-%Y")
+
+                # Calculate Tax 
+                    subtotal = grand_total
+   
+                    cgst = subtotal * cgst_given / 100
+
+                    sgst = subtotal * sgst_given / 100
+
+                    final_total = subtotal + cgst + sgst    
+
+                # Billing And Invoice(db)
+                    pdf_file = generate_invoice(
+                       user_id = st.session_state.user_id, 
+                       bill_no=bill_no,
+                       customer_name=customer_name,
+                       customer_address=customer_address,
+                       mobile_no=mobile_no,
+                       invoice_date=invoice_date,
+                       invoice_rows=invoice_rows,
+                       subtotal=subtotal,
+                       cgst=cgst,
+                       cgst_rate=f"{cgst_given}%",
+                       sgst=sgst,
+                       sgst_rate=f"{sgst_given}%",
+                       grand_total=int(final_total)
+                    ) 
+
+                # save the bill  
                     save_bill(
                         bill_no,
-                        st.session_state.bill_items
-                    )
-
-                    pdf_file = generate_invoice(
-                        bill_no,
-                        invoice_rows,
-                        grand_total
-                    )
+                        customer_name,
+                        customer_address,
+                        mobile_no,
+                        st.session_state.bill_items,
+                        cgst_given,
+                        sgst_given,
+                        st.session_state.user_id
+                    )                        
 
                     st.success(
                         f"✅ {bill_no} Generated Successfully"
                     )
 
                     st.write(
-                        f"Grand Total: ₹{grand_total}"
+                        f"Grand Total: ₹{final_total}"
                     )
 
                     with open(pdf_file, "rb") as file:
@@ -589,10 +742,10 @@ elif page == "📈 Sales Dashboard":
         unsafe_allow_html=True,
     )
 
-    total_products = get_total_products()
-    total_stock = get_total_stock()
-    today_sales = get_today_sales()
-    revenue = get_today_revenue()
+    total_products = get_total_products(st.session_state.user_id)
+    total_stock = get_total_stock(st.session_state.user_id)
+    today_sales = get_today_sales(st.session_state.user_id)
+    revenue = get_today_revenue(st.session_state.user_id)
 
     c1, c2, c3, c4 = st.columns(4)
 
@@ -633,7 +786,7 @@ elif page == "📈 Sales Dashboard":
 
     if report == "Low Stock Items":
 
-        low_stock = get_low_stock_items()
+        low_stock = get_low_stock_items(st.session_state.user_id)
 
         st.subheader(
             "⚠ Low Stock Products"
@@ -648,7 +801,7 @@ elif page == "📈 Sales Dashboard":
 
         st.subheader("📊 Overview")
         inventory = pd.DataFrame(
-            get_inventory()
+            get_inventory(st.session_state.user_id)
         )
 
         if inventory.empty:
@@ -726,7 +879,7 @@ elif page == "📈 Sales Dashboard":
 
         st.subheader("📋 Sales List")
         
-        products = view_sales()
+        products = view_sales(st.session_state.user_id)
         products = products.iloc[::-1]
         st.dataframe(
             products,
@@ -736,7 +889,7 @@ elif page == "📈 Sales Dashboard":
 
     elif report == "Empty Stock Items":
 
-        Empty_stock = get_empty_stock_items()
+        Empty_stock = get_empty_stock_items(st.session_state.user_id)
         st.subheader(
         "⚠ Empty Stock Products"
         )
@@ -760,7 +913,7 @@ elif page == "📈 Sales Dashboard":
         )
 
         revenue_df = get_revenue_trend(
-            days
+            days,st.session_state.user_id
         )
 
         total_revenue = (
@@ -799,7 +952,7 @@ elif page == "💡 Stock Recommendations":
         unsafe_allow_html=True,
     )
 
-    recommendations = get_stock_recommendations()
+    recommendations = get_stock_recommendations(st.session_state.user_id)
 
     st.dataframe(
         recommendations,
@@ -836,7 +989,7 @@ elif page == "🔮 Demand Forecasting":
 
     if st.button( "Generate Forecast", use_container_width=True ): 
         with st.spinner( "Analyzing sales history..." ):
-            recommendations = get_ai_recommendation(days)
+            recommendations = get_ai_recommendation(days,st.session_state.user_id)
 
             st.dataframe(
                 recommendations,
@@ -906,6 +1059,7 @@ elif page == "🚚 Supplier Management":
                         name,                        
                         phone_no,
                         address,
+                        st.session_state.user_id
                     )
 
                     st.success("✅ Product Added Successfully")
@@ -919,7 +1073,10 @@ elif page == "🚚 Supplier Management":
 
         st.subheader("📋 Supplier List")
         
-        suppliers = view_suppliers()
+        suppliers = view_suppliers(st.session_state.user_id)
+        if "shop_id" in suppliers.columns:
+           suppliers = suppliers.drop(columns=["shop_id"])
+
         st.dataframe(
             suppliers,
             hide_index=True,
@@ -956,16 +1113,29 @@ elif page == "🚚 Supplier Management":
     
             elif not data:
                 st.error("Select at least one field to update")
-    
+
             else:
-                try:
+
+                supplier = get_supplier_by_id(
+                    supplier_id,
+                    st.session_state.user_id
+                )
+
+                if not supplier:
                 
-                    update_supplier(supplier_id, data)
+                    st.error(
+                        "supplier ID not found for your shop"
+                    )    
     
-                    st.success("✅ Supplier Updated Successfully")
-    
-                except Exception as e:
-                    st.error(f"Error: {e}")
+                else:
+                    try:
+                    
+                        update_supplier(supplier_id, data,st.session_state.user_id)
+
+                        st.success("✅ Supplier Updated Successfully")
+
+                    except Exception as e:
+                        st.error(f"Error: {e}")
 
     # DELETE supplier
 
@@ -983,12 +1153,25 @@ elif page == "🚚 Supplier Management":
                 st.error("Enter Supplier ID")
 
             else:
-                try:
 
-                    delete_supplier(supplier_id)
+                supplier = get_supplier_by_id(
+                    supplier_id,
+                    st.session_state.user_id
+                )
 
-                    st.success("✅ Supplier Deleted Successfully")
+                if not supplier:
+                
+                    st.error(
+                        "supplier ID not found for your shop"
+                    )    
 
-                except Exception as e:
-                    st.error(f"Error: {e}")   
+                else:
+                    try:
+
+                        delete_supplier(supplier_id,st.session_state.user_id)
+
+                        st.success("✅ Supplier Deleted Successfully")
+
+                    except Exception as e:
+                        st.error(f"Error: {e}")   
 

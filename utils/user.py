@@ -1,18 +1,17 @@
 from database import supabase
-from datetime import datetime
-from zoneinfo import ZoneInfo
 
-def add_user(name):
-
-    data = {
-        "name": name,
-        "used_at": datetime.now(
-                ZoneInfo("Asia/Kolkata")
-            ).isoformat()
-    }
+def login_user(username, password):
 
     response = (
-        supabase.table("users").insert(data).execute()
+        supabase
+        .table("userss")
+        .select("*")
+        .eq("username", username)
+        .eq("password", password)
+        .execute()
     )
 
-    return response.data
+    if response.data:
+        return response.data[0]
+
+    return None

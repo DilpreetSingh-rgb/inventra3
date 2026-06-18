@@ -1,8 +1,8 @@
 from utils.inventry import view_products
 
-def get_stock_recommendations():
+def get_stock_recommendations(user_id):
 
-    products = view_products()
+    products = view_products(user_id)
 
     recommendations = []
 

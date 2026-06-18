@@ -2,14 +2,15 @@ from database import supabase
 import pandas as pd
 
 
-# # ADD PRODUCT
+# # ADD sup
 
-def add_supplier(name, phone_no, address):
+def add_supplier(name, phone_no, address,user_id):
 
     data = {
         "name": name,
         "phone_no": phone_no,
         "address": address,
+        "shop_id": user_id
     }
 
     response = (
@@ -18,12 +19,12 @@ def add_supplier(name, phone_no, address):
 
     return response.data
 
-# # VIEW PRODUCTS
+# # VIEW sup
 
-def view_suppliers():
+def view_suppliers(user_id):
     try:
 
-        test = supabase.table("supplier").select("*").execute()
+        test = supabase.table("supplier").select("*").eq("shop_id",user_id ).execute()
 
         df = pd.DataFrame(test.data)
         return df
@@ -31,16 +32,32 @@ def view_suppliers():
 
         print("Connection failed:", e)
 
+# # get product by id
 
-# UPDATE PRODUCT
+def get_supplier_by_id(supplier_id, user_id):
 
-def update_supplier(supplier_id, data):
+    response = (
+        supabase
+        .table("shop")
+        .select("*")
+        .eq("id", supplier_id)
+        .eq("shop_id", user_id)
+        .execute()
+    )
+
+    return response.data
+
+
+# UPDATE sup
+
+def update_supplier(supplier_id, data,user_id):
 
     response = (
         supabase
         .table("supplier")
         .update(data)
         .eq("id", supplier_id)
+        .eq("shop_id",user_id )
         .execute()
     )
 
@@ -48,13 +65,14 @@ def update_supplier(supplier_id, data):
 
 # DELETE PRODUCT
 
-def delete_supplier(supplier_id):
+def delete_supplier(supplier_id,user_id):
 
     response = (
         supabase
         .table("supplier")
         .delete()
         .eq("id", supplier_id)
+        .eq("shop_id",user_id )
         .execute()
     )
 

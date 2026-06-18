@@ -3,10 +3,10 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from utils.inventry import view_products
 
-def get_ai_recommendation(days):
+def get_ai_recommendation(days,user_id):
 
-    sales = view_sales()
-    products = view_products()
+    sales = view_sales(user_id)
+    products = view_products(user_id)
 
     sales_ = sales[
         ["product_id", "product_name", "quantity", "created_at"]
@@ -58,6 +58,14 @@ def get_ai_recommendation(days):
         predictions = model.predict(
             future_days
         )
+        product_row = products[
+            products["id"] == pid
+        ]
+
+        if product_row.empty:
+            continue
+        
+        available_stock = product_row["stock"].iloc[0]
 
         recommendations.append(
             {
