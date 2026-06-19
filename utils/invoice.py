@@ -4,9 +4,6 @@ from num2words import num2words
 from textwrap import wrap
 
 from database import supabase
-import os
-
-downloads = os.path.join(os.path.expanduser("~"), "Downloads")
 
 def generate_invoice(
     user_id,    
@@ -25,7 +22,7 @@ def generate_invoice(
 ):
 
 
-    filename = os.path.join(downloads, f"{bill_no}.pdf")
+    filename = f"{bill_no}.pdf"
 
     pdf = canvas.Canvas(
         filename,
