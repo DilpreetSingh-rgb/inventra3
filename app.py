@@ -154,7 +154,7 @@ if st.session_state.user_name is None:
             🛒 Inventra
         </div>
         <div class="welcome-subtitle">
-            AI-Powered Billing & Inventory Management System
+            AI-Powered Inventory & Business Management System
         </div>
     </div>
     """, unsafe_allow_html=True)
