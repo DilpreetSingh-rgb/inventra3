@@ -237,18 +237,6 @@ def generate_invoice(
         str(words)
     )
 
-    # ==========================
-    # SIGNATURE
-    # ==========================
-
-    # pdf.drawImage(
-    #     "signature.png",
-    #     464,
-    #     57,
-    #     width=80,
-    #     height=30
-    # )
-
     pdf.save()
 
     return filename
