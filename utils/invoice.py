@@ -4,6 +4,9 @@ from num2words import num2words
 from textwrap import wrap
 
 from database import supabase
+import os
+
+downloads = os.path.join(os.path.expanduser("~"), "Downloads")
 
 def generate_invoice(
     user_id,    
@@ -22,7 +25,7 @@ def generate_invoice(
 ):
 
 
-    filename = f"{bill_no}.pdf"
+    filename = os.path.join(downloads, f"{bill_no}.pdf")
 
     pdf = canvas.Canvas(
         filename,
@@ -36,11 +39,6 @@ def generate_invoice(
         .eq("shop_id", user_id)
         .execute()
     )
-
-    len_shop_name = len(response.data[0]["shop_name"])
-    len_shop_des = len(response.data[0]["shop_des"])
-    len_shop_location = len(response.data[0]["shop_location"])
-    len_shop_gstin_no = (len(response.data[0]["gstin_no"]))+10
 
     width, height = A4
 
@@ -56,41 +54,40 @@ def generate_invoice(
     # ==========================
     # SHOP DETAILS
     # ==========================
-    
-    pdf.setFont(
-        "Helvetica-Bold",
-        42
-    )
-    
-    pdf.drawString(
-        60,
+           
+    pdf.setFont("Helvetica-Bold", 42)
+
+    pdf.drawCentredString(
+        595 / 2,
         755,
-        f"{' ' * (int((30-len_shop_name)/2))}{response.data[0]['shop_name']}"
-    )
-    
-    pdf.setFont(
-        "Helvetica-Bold",
-        12
-    )
-    
-    pdf.drawString(
-        60,
-        730,
-        f"{' ' * (int((110-len_shop_des)/2))}{response.data[0]['shop_des']}"
-    )
-    
-    pdf.drawString(
-        60,
-        710,
-        f"{' ' * (int((110-len_shop_location)/2))}{response.data[0]['shop_location']}"
+        response.data[0]["shop_name"]
     )
 
-    pdf.drawString(
-        60,
-        690,
-        f"{' ' * (int((110-len_shop_gstin_no)/2))} GSTIN No.: {response.data[0]['gstin_no']}"
+    
+    pdf.setFont("Helvetica-Bold", 12)
+
+    pdf.drawCentredString(
+        595 / 2,
+        730,
+        response.data[0]["shop_des"]
     )
-        
+    
+    pdf.setFont("Helvetica-Bold", 12)
+
+    pdf.drawCentredString(
+        595 / 2,
+        710,
+        response.data[0]["shop_location"]
+    )
+    
+    pdf.setFont("Helvetica-Bold", 12)
+
+    pdf.drawCentredString(
+        595 / 2,
+        690,
+        f"GSTIN No.: {response.data[0]['gstin_no']}"
+    )
+            
     pdf.setFont(
         "Helvetica",
         10
