@@ -454,14 +454,14 @@ elif page == "🧾 Billing":
     cgst_given = st.number_input(
         "CGST %",
         min_value=0,
-        value=9,
+        # value=9,
         key="cgst_given"
     )
 
     sgst_given = st.number_input(
         "SGST %",
         min_value=0,
-        value=9,
+        # value=9,
         key = "sgst_given"
     )
 
